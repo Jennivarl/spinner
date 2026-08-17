@@ -2,7 +2,7 @@
 
 A loading spinner for the GenLayer Portal, shaped like the thing it is waiting on.
 
-**Live demo:** https://jennivarl.github.io/genlayer-spinner/
+**Live demo:** https://jennivarl.github.io/spinner/
 
 Five validators start out of step, converge, agree for a beat, then begin the next round. It is a GenLayer round, running as a loading state.
 

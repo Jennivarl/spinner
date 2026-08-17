@@ -1,0 +1,311 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>GenLayer Consensus Spinner</title>
+    <link rel="stylesheet" href="spinner.css" />
+    <style>
+      :root {
+        --bg: #ffffff;
+        --panel: #f6f5fb;
+        --line: #e6e3f2;
+        --ink: #14121c;
+        --muted: #5f5a72;
+        --brand: #6d3bf5;
+      }
+
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --bg: #0d0b14;
+          --panel: #16131f;
+          --line: #262036;
+          --ink: #f3f1fa;
+          --muted: #9d96b4;
+          --brand: #9575ff;
+        }
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        padding: 0 24px 96px;
+        background: var(--bg);
+        color: var(--ink);
+        font: 16px/1.6 ui-sans-serif, system-ui, -apple-system, "Segoe UI",
+          Roboto, Helvetica, Arial, sans-serif;
+        -webkit-font-smoothing: antialiased;
+      }
+
+      .wrap {
+        max-width: 760px;
+        margin: 0 auto;
+      }
+
+      header {
+        padding: 72px 0 40px;
+      }
+
+      h1 {
+        margin: 0 0 12px;
+        font-size: 30px;
+        letter-spacing: -0.02em;
+      }
+
+      h2 {
+        margin: 48px 0 14px;
+        font-size: 15px;
+        text-transform: uppercase;
+        letter-spacing: 0.09em;
+        color: var(--muted);
+        font-weight: 600;
+      }
+
+      p {
+        margin: 0 0 14px;
+        color: var(--muted);
+        max-width: 62ch;
+      }
+
+      .lead {
+        font-size: 17px;
+        color: var(--ink);
+      }
+
+      .stage {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 56px;
+        flex-wrap: wrap;
+        padding: 64px 24px;
+        background: var(--panel);
+        border: 1px solid var(--line);
+        border-radius: 16px;
+      }
+
+      .sizes {
+        display: flex;
+        align-items: center;
+        gap: 40px;
+        flex-wrap: wrap;
+        padding: 40px 24px;
+        background: var(--panel);
+        border: 1px solid var(--line);
+        border-radius: 16px;
+      }
+
+      .swatch {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 12px;
+      }
+
+      .swatch code {
+        font-size: 12px;
+        color: var(--muted);
+      }
+
+      /* A realistic loading state, which is where this actually has to work. */
+      .card {
+        border: 1px solid var(--line);
+        border-radius: 14px;
+        background: var(--panel);
+        padding: 0;
+        overflow: hidden;
+      }
+
+      .card-head {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 14px 18px;
+        border-bottom: 1px solid var(--line);
+        font-weight: 600;
+        font-size: 14px;
+      }
+
+      .card-body {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 14px;
+        min-height: 190px;
+        color: var(--muted);
+        font-size: 14px;
+      }
+
+      .inline-demo {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        padding: 11px 18px;
+        border-radius: 10px;
+        background: var(--brand);
+        color: #fff;
+        font-size: 14px;
+        font-weight: 600;
+      }
+
+      .inline-demo .gl-spinner {
+        --gl-spinner-color: #fff;
+      }
+
+      pre {
+        margin: 0;
+        padding: 18px;
+        background: var(--panel);
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        overflow-x: auto;
+        font-size: 13px;
+        line-height: 1.65;
+        color: var(--ink);
+      }
+
+      footer {
+        margin-top: 64px;
+        padding-top: 24px;
+        border-top: 1px solid var(--line);
+        font-size: 14px;
+        color: var(--muted);
+      }
+
+      a {
+        color: var(--brand);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <header>
+        <h1>GenLayer Consensus Spinner</h1>
+        <p class="lead">
+          Five validators start out of step, converge, agree for a beat, and
+          begin the next round. It is the shape of a GenLayer transaction,
+          used as a loading state.
+        </p>
+        <p>
+          Pure CSS. No JavaScript, no images, no dependencies. One element,
+          five children, two custom properties.
+        </p>
+      </header>
+
+      <div class="stage">
+        <div class="swatch">
+          <div class="gl-spinner" style="--gl-spinner-size: 120px" role="status" aria-label="Loading">
+            <span></span><span></span><span></span><span></span><span></span>
+          </div>
+          <code>120px</code>
+        </div>
+        <div class="swatch">
+          <div class="gl-spinner" style="--gl-spinner-size: 64px" role="status" aria-label="Loading">
+            <span></span><span></span><span></span><span></span><span></span>
+          </div>
+          <code>64px</code>
+        </div>
+      </div>
+
+      <h2>Why five, and why it loops</h2>
+      <p>
+        A GenLayer round is five validators executing independently before
+        anything is agreed, so the spinner uses five nodes rather than an
+        arbitrary count. They are deliberately out of phase at the start of
+        each cycle, because that is what independent execution looks like
+        before consensus.
+      </p>
+      <p>
+        It never resolves and stops. A transaction that fails consensus
+        rotates its leader and runs the round again, and a spinner that
+        settled once would be telling the wrong story about the thing it is
+        waiting on.
+      </p>
+
+      <h2>At the sizes a UI actually uses</h2>
+      <div class="sizes">
+        <div class="swatch">
+          <div class="gl-spinner" style="--gl-spinner-size: 16px" role="status" aria-label="Loading">
+            <span></span><span></span><span></span><span></span><span></span>
+          </div>
+          <code>16px</code>
+        </div>
+        <div class="swatch">
+          <div class="gl-spinner" style="--gl-spinner-size: 24px" role="status" aria-label="Loading">
+            <span></span><span></span><span></span><span></span><span></span>
+          </div>
+          <code>24px</code>
+        </div>
+        <div class="swatch">
+          <div class="gl-spinner" style="--gl-spinner-size: 32px" role="status" aria-label="Loading">
+            <span></span><span></span><span></span><span></span><span></span>
+          </div>
+          <code>32px</code>
+        </div>
+        <div class="swatch">
+          <div class="gl-spinner" style="--gl-spinner-size: 48px" role="status" aria-label="Loading">
+            <span></span><span></span><span></span><span></span><span></span>
+          </div>
+          <code>48px</code>
+        </div>
+        <div class="swatch">
+          <span class="inline-demo">
+            <span class="gl-spinner" style="--gl-spinner-size: 16px" role="status" aria-label="Submitting">
+              <span></span><span></span><span></span><span></span><span></span>
+            </span>
+            Submitting
+          </span>
+          <code>in a button</code>
+        </div>
+      </div>
+
+      <h2>In a loading state</h2>
+      <div class="card">
+        <div class="card-head">Transaction status</div>
+        <div class="card-body">
+          <div class="gl-spinner" style="--gl-spinner-size: 28px" role="status" aria-label="Loading">
+            <span></span><span></span><span></span><span></span><span></span>
+          </div>
+          Waiting for consensus
+        </div>
+      </div>
+
+      <h2>Using it</h2>
+      <pre><code>&lt;link rel="stylesheet" href="spinner.css"&gt;
+
+&lt;div class="gl-spinner" role="status" aria-label="Loading"&gt;
+  &lt;span&gt;&lt;/span&gt;&lt;span&gt;&lt;/span&gt;&lt;span&gt;&lt;/span&gt;&lt;span&gt;&lt;/span&gt;&lt;span&gt;&lt;/span&gt;
+&lt;/div&gt;</code></pre>
+      <p style="margin-top: 14px">
+        Size and colour are custom properties, so it inherits a theme without
+        touching the stylesheet:
+      </p>
+      <pre><code>&lt;div class="gl-spinner"
+     style="--gl-spinner-size: 32px; --gl-spinner-color: #fff"&gt;</code></pre>
+
+      <h2>Details that matter in a real UI</h2>
+      <p>
+        Only <code>transform</code> and <code>opacity</code> are animated, so
+        the browser can keep it on the compositor and it does not cause layout
+        work while a page is already busy loading.
+      </p>
+      <p>
+        It respects <code>prefers-reduced-motion</code>. Rather than freezing,
+        which reads as a hung page, the nodes settle onto the ring and pulse
+        together, so it still says "working" without the orbit.
+      </p>
+      <p>
+        Every instance carries <code>role="status"</code> and a label, so a
+        screen reader announces the wait instead of silence.
+      </p>
+
+      <footer>
+        Built for the GenLayer Spinner mission. Source and this page are the
+        same repository, deployed straight from it.
+      </footer>
+    </div>
+  </body>
+</html>

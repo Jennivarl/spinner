@@ -1,0 +1,136 @@
+/*
+ * GenLayer consensus spinner.
+ *
+ * Five validators, which is the size of a GenLayer round. Each one starts
+ * out of step with the others, because that is what independent execution
+ * looks like before anything is agreed. They pull into phase, hold together
+ * for a moment when consensus lands, then the next round begins.
+ *
+ * The loop is the point. A transaction that fails consensus rotates its
+ * leader and runs again, so a spinner that resolves once and stops would be
+ * telling the wrong story.
+ *
+ * No dependencies, no images, no JavaScript. Two custom properties control
+ * everything: --gl-spinner-size and --gl-spinner-color.
+ */
+
+.gl-spinner {
+  --gl-spinner-size: 48px;
+  --gl-spinner-color: #6d3bf5;
+  --gl-spinner-duration: 2.4s;
+
+  position: relative;
+  display: inline-block;
+  width: var(--gl-spinner-size);
+  height: var(--gl-spinner-size);
+  flex: none;
+}
+
+/* The ring the validators sit on. Faint, because it is scaffolding for the
+   eye rather than part of the message. */
+.gl-spinner::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: calc(var(--gl-spinner-size) * 0.03) solid currentColor;
+  color: var(--gl-spinner-color);
+  opacity: 0.12;
+}
+
+.gl-spinner span {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: calc(var(--gl-spinner-size) * 0.17);
+  height: calc(var(--gl-spinner-size) * 0.17);
+  margin: calc(var(--gl-spinner-size) * -0.085) 0 0
+    calc(var(--gl-spinner-size) * -0.085);
+  border-radius: 50%;
+  background: var(--gl-spinner-color);
+
+  /* Each node is placed by rotating it out to the ring, then the whole
+     element is spun. Composing both in one transform keeps this to a single
+     animated property, which is what lets it stay on the compositor. */
+  animation: gl-consensus var(--gl-spinner-duration) cubic-bezier(0.6, 0, 0.3, 1)
+    infinite;
+}
+
+/*
+ * The five nodes are 72 degrees apart at rest. Staggering the delay is what
+ * makes them look independent early in the cycle: they are running the same
+ * animation, just not yet in step.
+ */
+.gl-spinner span:nth-child(1) {
+  --gl-angle: 0deg;
+  animation-delay: 0s;
+}
+.gl-spinner span:nth-child(2) {
+  --gl-angle: 72deg;
+  animation-delay: -0.16s;
+}
+.gl-spinner span:nth-child(3) {
+  --gl-angle: 144deg;
+  animation-delay: -0.32s;
+}
+.gl-spinner span:nth-child(4) {
+  --gl-angle: 216deg;
+  animation-delay: -0.48s;
+}
+.gl-spinner span:nth-child(5) {
+  --gl-angle: 288deg;
+  animation-delay: -0.64s;
+}
+
+@keyframes gl-consensus {
+  /* Independent execution. Nodes sit apart on the ring, at their own size. */
+  0% {
+    transform: rotate(var(--gl-angle)) translateY(calc(var(--gl-spinner-size) * -0.36))
+      scale(0.55);
+    opacity: 0.35;
+  }
+
+  /* Converging. The ring rotates while the nodes draw inward. */
+  45% {
+    transform: rotate(calc(var(--gl-angle) + 180deg))
+      translateY(calc(var(--gl-spinner-size) * -0.16)) scale(1);
+    opacity: 1;
+  }
+
+  /* Agreement. Every node has reached the same point at the same size, so
+     for a beat the five read as one. */
+  58% {
+    transform: rotate(calc(var(--gl-angle) + 200deg))
+      translateY(calc(var(--gl-spinner-size) * -0.1)) scale(1.05);
+    opacity: 1;
+  }
+
+  /* Released back out for the next round. */
+  100% {
+    transform: rotate(calc(var(--gl-angle) + 360deg))
+      translateY(calc(var(--gl-spinner-size) * -0.36)) scale(0.55);
+    opacity: 0.35;
+  }
+}
+
+/*
+ * Respect a reduced-motion preference. The spinner still has to communicate
+ * "working", so it fades as a group rather than freezing, which would read
+ * as a hung page.
+ */
+@media (prefers-reduced-motion: reduce) {
+  .gl-spinner span {
+    animation: gl-consensus-calm 1.8s ease-in-out infinite;
+    transform: rotate(var(--gl-angle))
+      translateY(calc(var(--gl-spinner-size) * -0.36));
+  }
+  @keyframes gl-consensus-calm {
+    0%,
+    100% {
+      opacity: 0.25;
+    }
+    50% {
+      opacity: 1;
+    }
+  }
+}

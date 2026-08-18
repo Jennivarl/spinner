@@ -185,8 +185,8 @@
       <header>
         <h1>GenLayer Consensus Spinner</h1>
         <p class="lead">
-          Five validators start out of step, converge, agree for a beat, and
-          begin the next round. It is the shape of a GenLayer transaction,
+          Five validators begin on uneven orbits, converge into one cluster,
+          hold for a beat, and scatter into the next round. It is the shape of a GenLayer transaction,
           used as a loading state.
         </p>
         <p>
@@ -214,9 +214,11 @@
       <p>
         A GenLayer round is five validators executing independently before
         anything is agreed, so the spinner uses five nodes rather than an
-        arbitrary count. They are deliberately out of phase at the start of
-        each cycle, because that is what independent execution looks like
-        before consensus.
+        arbitrary count. They begin on deliberately uneven orbits,
+        because independent execution does not look tidy, and then all
+        five converge at the same instant. Staggering them in time
+        instead would look unsynchronised and never actually converge,
+        so the moment of agreement would never happen.
       </p>
       <p>
         It never resolves and stops. A transaction that fails consensus

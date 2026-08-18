@@ -1,23 +1,37 @@
 /*
  * GenLayer consensus spinner.
  *
- * Five validators, which is the size of a GenLayer round. Each one starts
- * out of step with the others, because that is what independent execution
- * looks like before anything is agreed. They pull into phase, hold together
- * for a moment when consensus lands, then the next round begins.
+ * Five validators, which is the size of a GenLayer round. They begin on
+ * uneven orbits, because independent execution does not look tidy. Then
+ * they pull into a single tight cluster at the same instant, hold for a
+ * beat, and scatter back out as the next round begins.
  *
- * The loop is the point. A transaction that fails consensus rotates its
- * leader and runs again, so a spinner that resolves once and stops would be
- * telling the wrong story.
+ * The independence is spatial rather than temporal, and that is deliberate.
+ * Staggering the nodes with animation-delay is the obvious way to make them
+ * look unsynchronised, and it quietly breaks the idea: offset nodes are at
+ * different points in the cycle forever, so they never converge together
+ * and the moment of agreement never actually happens. Giving each node its
+ * own orbit radius instead keeps every node on the same timeline, so the
+ * convergence is real, while the uneven radii keep the ring from looking
+ * mechanical before it.
  *
- * No dependencies, no images, no JavaScript. Two custom properties control
- * everything: --gl-spinner-size and --gl-spinner-color.
+ * The loop matters too. A transaction that fails consensus rotates its
+ * leader and runs again, so a spinner that resolved once and stopped would
+ * be telling the wrong story about what the user is waiting for.
+ *
+ * No dependencies, no images, no JavaScript. Size and colour are custom
+ * properties.
  */
 
 .gl-spinner {
   --gl-spinner-size: 48px;
   --gl-spinner-color: #6d3bf5;
-  --gl-spinner-duration: 2.4s;
+  --gl-spinner-duration: 2.6s;
+
+  /* Radius the nodes meet at. Not zero: five overlapping dots collapsing to
+     a single point reads as a pulse rather than a cluster, and at 16px it
+     just looks like a flicker. */
+  --gl-focus: 0.09;
 
   position: relative;
   display: inline-block;
@@ -26,14 +40,14 @@
   flex: none;
 }
 
-/* The ring the validators sit on. Faint, because it is scaffolding for the
-   eye rather than part of the message. */
+/* The ring the validators travel on. Faint, because it is there to give the
+   eye something to measure the motion against, not to be looked at. */
 .gl-spinner::after {
   content: "";
   position: absolute;
   inset: 0;
   border-radius: 50%;
-  border: calc(var(--gl-spinner-size) * 0.03) solid currentColor;
+  border: max(1px, calc(var(--gl-spinner-size) * 0.03)) solid currentColor;
   color: var(--gl-spinner-color);
   opacity: 0.12;
 }
@@ -49,81 +63,98 @@
   border-radius: 50%;
   background: var(--gl-spinner-color);
 
-  /* Each node is placed by rotating it out to the ring, then the whole
-     element is spun. Composing both in one transform keeps this to a single
-     animated property, which is what lets it stay on the compositor. */
-  animation: gl-consensus var(--gl-spinner-duration) cubic-bezier(0.6, 0, 0.3, 1)
+  /* Orbit position and size compose into one transform, so a single
+     animated property carries the whole motion and the browser can keep it
+     on the compositor. */
+  animation: gl-consensus var(--gl-spinner-duration) cubic-bezier(0.65, 0, 0.35, 1)
     infinite;
 }
 
 /*
- * The five nodes are 72 degrees apart at rest. Staggering the delay is what
- * makes them look independent early in the cycle: they are running the same
- * animation, just not yet in step.
+ * Nodes sit 72 degrees apart, but on deliberately uneven radii. The spread
+ * values are irregular by design; evenly spaced radii would read as a
+ * pattern rather than as five machines working separately.
+ *
+ * No animation-delay anywhere. Every node runs the same timeline, which is
+ * what lets them arrive together.
  */
 .gl-spinner span:nth-child(1) {
   --gl-angle: 0deg;
-  animation-delay: 0s;
+  --gl-spread: 0.37;
 }
 .gl-spinner span:nth-child(2) {
   --gl-angle: 72deg;
-  animation-delay: -0.16s;
+  --gl-spread: 0.29;
 }
 .gl-spinner span:nth-child(3) {
   --gl-angle: 144deg;
-  animation-delay: -0.32s;
+  --gl-spread: 0.4;
 }
 .gl-spinner span:nth-child(4) {
   --gl-angle: 216deg;
-  animation-delay: -0.48s;
+  --gl-spread: 0.32;
 }
 .gl-spinner span:nth-child(5) {
   --gl-angle: 288deg;
-  animation-delay: -0.64s;
+  --gl-spread: 0.35;
 }
 
 @keyframes gl-consensus {
-  /* Independent execution. Nodes sit apart on the ring, at their own size. */
+  /* Independent execution. Uneven orbits, small and dim. */
   0% {
-    transform: rotate(var(--gl-angle)) translateY(calc(var(--gl-spinner-size) * -0.36))
-      scale(0.55);
-    opacity: 0.35;
+    transform: rotate(var(--gl-angle))
+      translateY(calc(var(--gl-spinner-size) * var(--gl-spread) * -1))
+      scale(0.5);
+    opacity: 0.4;
   }
 
-  /* Converging. The ring rotates while the nodes draw inward. */
-  45% {
-    transform: rotate(calc(var(--gl-angle) + 180deg))
-      translateY(calc(var(--gl-spinner-size) * -0.16)) scale(1);
+  /* Still apart, but the round is under way. */
+  35% {
+    transform: rotate(calc(var(--gl-angle) + 170deg))
+      translateY(calc(var(--gl-spinner-size) * var(--gl-spread) * -0.92))
+      scale(0.78);
+    opacity: 0.75;
+  }
+
+  /* Agreement. Every node reaches the same radius at the same size at the
+     same moment, so the five briefly read as one. */
+  56% {
+    transform: rotate(calc(var(--gl-angle) + 268deg))
+      translateY(calc(var(--gl-spinner-size) * var(--gl-focus) * -1))
+      scale(1.12);
     opacity: 1;
   }
 
-  /* Agreement. Every node has reached the same point at the same size, so
-     for a beat the five read as one. */
-  58% {
-    transform: rotate(calc(var(--gl-angle) + 200deg))
-      translateY(calc(var(--gl-spinner-size) * -0.1)) scale(1.05);
+  /* Held, but still turning. A genuinely motionless beat in a loading
+     indicator reads as a hung page, so the cluster rotates through it. */
+  67% {
+    transform: rotate(calc(var(--gl-angle) + 296deg))
+      translateY(calc(var(--gl-spinner-size) * var(--gl-focus) * -1))
+      scale(1.12);
     opacity: 1;
   }
 
-  /* Released back out for the next round. */
+  /* Released for the next round. */
   100% {
     transform: rotate(calc(var(--gl-angle) + 360deg))
-      translateY(calc(var(--gl-spinner-size) * -0.36)) scale(0.55);
-    opacity: 0.35;
+      translateY(calc(var(--gl-spinner-size) * var(--gl-spread) * -1))
+      scale(0.5);
+    opacity: 0.4;
   }
 }
 
 /*
- * Respect a reduced-motion preference. The spinner still has to communicate
- * "working", so it fades as a group rather than freezing, which would read
- * as a hung page.
+ * Respect a reduced-motion preference. It still has to say "working", so
+ * the nodes settle onto their orbits and breathe together rather than
+ * freezing, which would look like the page had died.
  */
 @media (prefers-reduced-motion: reduce) {
   .gl-spinner span {
-    animation: gl-consensus-calm 1.8s ease-in-out infinite;
     transform: rotate(var(--gl-angle))
-      translateY(calc(var(--gl-spinner-size) * -0.36));
+      translateY(calc(var(--gl-spinner-size) * var(--gl-spread) * -1));
+    animation: gl-consensus-calm 2s ease-in-out infinite;
   }
+
   @keyframes gl-consensus-calm {
     0%,
     100% {
@@ -132,5 +163,18 @@
     50% {
       opacity: 1;
     }
+  }
+}
+
+/*
+ * Honour forced-colors mode, where custom backgrounds are discarded. Without
+ * this the nodes vanish entirely and the spinner becomes an empty ring.
+ */
+@media (forced-colors: active) {
+  .gl-spinner span {
+    background: CanvasText;
+  }
+  .gl-spinner::after {
+    color: CanvasText;
   }
 }

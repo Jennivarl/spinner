@@ -11,7 +11,7 @@ Five validators start out of step, converge, agree for a beat, then begin the ne
 A generic spinner would work anywhere and mean nothing. GenLayer's defining mechanic is five validators executing independently and then reaching agreement, so the spinner is built from that:
 
 - **Five nodes**, because that is the size of a GenLayer round, not an arbitrary count that happened to look balanced.
-- **Out of phase at the start of every cycle**, because independent execution is what happens before consensus. The stagger is the message.
+- **Uneven orbits before they converge**, because independent execution does not look tidy. Every node runs the same timeline with no stagger, which is what lets all five arrive together; offsetting them with `animation-delay` is the obvious way to look unsynchronised and it quietly destroys the idea, since nodes permanently out of phase never converge at all and the moment of agreement never happens.
 - **It never resolves and stops.** A transaction that fails consensus rotates its leader and runs again. A spinner that settled once would be telling the wrong story about what the user is waiting for.
 
 ## Using it
